@@ -96,6 +96,15 @@ diabetes_time = purrr::reduce(diabetes_time, bind_rows) %>%
 
 write_csv(diabetes_time, "a1c_time_series.csv")
 
+year_start = ymd("2021-05-01")
+year_end = ymd("2022-05-01")
+year_range = seq.Date(year_start, year_end, by = "day")
+last_readmit = sample(year_range, 1500, replace = T)
 #simulate readmission
-
+readmit = tibble(
+  patient_id = 1:1500, 
+  readmit_number = floor(rnorm(1500, 8, 1.5)), 
+  last_readmit = last_readmit
+)
+write_csv(readmit, "readmission.csv")
 
