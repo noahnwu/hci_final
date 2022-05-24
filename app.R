@@ -5,6 +5,7 @@
 library(shiny)
 library(tidyverse)
 library(lubridate)
+library(shinythemes)
 diabetes = read_csv("diabetes_dataset.csv")
 diabetes_time = read_csv("a1c_time_series.csv") %>%  
   mutate(hba1c_normal = paste0("Last HbA1c ", hba1c_normal))
@@ -23,7 +24,7 @@ diabetes_variables = as.list(
 names(diabetes_variables) = str_to_title(str_replace_all(diabetes_variables, "_", " "))
 
 # Define UI for application that draws a histogram
-ui <- fluidPage(
+ui <- fluidPage(theme = shinytheme("superhero"), 
 
     # Application title
     titlePanel("Report Visualization"),
@@ -137,12 +138,22 @@ server <- function(input, output) {
             theme_bw()+
             labs(x = "Values", 
                  y = "N", 
-                 title = input$diabetes_drop)
+                 title = paste0(
+                   "Last ", 
+                   str_to_title(str_replace_all(input$diabetes_drop, "_", " "))
+                 ), 
+                 fill = str_to_title(str_replace_all(input$due_filters, "_", " ")))
         } else{ 
           ggplot(diabetes, aes_string(input$diabetes_drop, fill = input$due_filters))+
             geom_histogram(color = "black")+
             theme_bw()+
-            labs(title = paste0(input$diabetes_drop))
+            labs(title = paste0(
+              "Last ", 
+              str_to_title(str_replace_all(input$diabetes_drop, "_", " "))
+              ), 
+              fill = str_to_title(str_replace_all(input$due_filters, "_", " "))
+              
+              )
         }
         
         
