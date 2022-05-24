@@ -89,7 +89,13 @@ for(i in 1:length(date_range)) {
   diabetes_time[[i]] = month_data
 }
 
-diabetes_time = purrr::reduce(diabetes_time, bind_rows)
+diabetes_time = purrr::reduce(diabetes_time, bind_rows) %>%  
+  left_join(diabetes %>%  
+              select(patient_id, hba1c_normal))
+
 
 write_csv(diabetes_time, "a1c_time_series.csv")
+
+#simulate readmission
+
 
