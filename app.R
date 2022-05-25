@@ -6,6 +6,7 @@ library(shiny)
 library(tidyverse)
 library(lubridate)
 library(shinythemes)
+library(DT)
 diabetes = read_csv("diabetes_dataset.csv")
 diabetes_time = read_csv("a1c_time_series.csv") %>%  
   mutate(hba1c_normal = paste0("Last HbA1c ", hba1c_normal))
@@ -96,7 +97,10 @@ ui <- fluidPage(theme = shinytheme("superhero"),
 
         # Show a plot of the generated distribution
         mainPanel(
-           plotOutput("condition_plot")
+           plotOutput("condition_plot"), 
+           tags$br(), 
+           tags$br(),
+           dataTableOutput("condition_table")
         )
     )
 )
@@ -108,7 +112,7 @@ server <- function(input, output) {
       if(input$dz == "Diabetes") { 
        
         if(input$diabetes_drop == "a1c_over_time") {
-          recent_data = diabetes %>%  
+          recent_data <- diabetes %>%  
             mutate(quartile = ntile(hba1c_value, 4)) %>% 
             filter(quartile >= as.numeric(input$patient_filter))
           
@@ -158,8 +162,10 @@ server <- function(input, output) {
         
         
       } else{ 
-        ggplot(readmit %>%  
-                 filter(last_readmit >= ymd(input$readmit_filter)))+
+        temp = readmit %>%  
+          filter(last_readmit >= ymd(input$readmit_filter))
+        
+        ggplot(temp)+
           geom_histogram(aes_string(input$readmit_drop), 
                          fill = "light blue", 
                          color = "black")+
@@ -173,10 +179,34 @@ server <- function(input, output) {
                  input$readmit_filter
                )
                )
+      }
+      
+    })
+    
+    output$condition_table = renderDataTable({
+      
+      if(input$dz == "Diabetes" & input$diabetes_drop != "a1c_over_time") { 
+        diabetes %>% 
+          arrange(patient_id) %>%  
+          rename_with(.fn = ~str_to_title(str_replace_all(.x, "_", " ")))
+      } else if(input$dz == "Diabetes" & input$diabetes_drop == "a1c_over_time") {
+        recent_data <- diabetes %>%  
+          mutate(quartile = ntile(hba1c_value, 4)) %>% 
+          filter(quartile >= as.numeric(input$patient_filter))
+        
+        diabetes_time %>%  
+          arrange(patient_id, test_date) %>% 
+          filter(patient_id %in% recent_data$patient_id) %>% 
+          filter(test_date >= input$time_filter)
+        
+        
         }
       
-       
+      
+      
     })
+    
+    
 }
 
 # Run the application 
