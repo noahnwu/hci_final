@@ -25,7 +25,7 @@ diabetes_variables = as.list(
 names(diabetes_variables) = str_to_title(str_replace_all(diabetes_variables, "_", " "))
 
 # Define UI for application that draws a histogram
-ui <- fluidPage(theme = shinytheme("superhero"), 
+ui <- fluidPage(theme = shinytheme("paper"), 
 
     # Application title
     titlePanel("Report Visualization"),
