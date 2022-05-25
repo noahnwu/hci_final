@@ -188,6 +188,8 @@ server <- function(input, output) {
       if(input$dz == "Diabetes" & input$diabetes_drop != "a1c_over_time") { 
         diabetes %>% 
           arrange(patient_id) %>%  
+          mutate(across(contains("month"), ~signif(.x, digits = 2)), 
+                 across(contains("value$"), ~signif(.x, digits = 2))) %>% 
           rename_with(.fn = ~str_to_title(str_replace_all(.x, "_", " ")))
       } else if(input$dz == "Diabetes" & input$diabetes_drop == "a1c_over_time") {
         recent_data <- diabetes %>%  
@@ -197,9 +199,14 @@ server <- function(input, output) {
         diabetes_time %>%  
           arrange(patient_id, test_date) %>% 
           filter(patient_id %in% recent_data$patient_id) %>% 
-          filter(test_date >= input$time_filter)
+          filter(test_date >= input$time_filter) %>%  
+          rename_with(.fn = ~str_to_title(str_replace_all(.x, "_", " "))) %>%  
+          mutate(across(where(is.numeric), ~signif(.x, digits = 2)))
+      } else { 
         
-        
+        readmit %>%  
+          filter(last_readmit >= ymd(input$readmit_filter)) %>%  
+          rename_with(.fn = ~str_to_title(str_replace_all(.x, "_", " ")))
         }
       
       
